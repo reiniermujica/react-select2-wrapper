@@ -1,23 +1,23 @@
-import React, { Component } from 'react';
-import PropTypes from 'prop-types';
-import ReactDOM from 'react-dom';
-import shallowEqualFuzzy from 'shallow-equal-fuzzy';
-import $ from 'jquery';
-import 'select2';
+import React, { Component } from "react";
+import PropTypes from "prop-types";
+import ReactDOM from "react-dom";
+import shallowEqualFuzzy from "shallow-equal-fuzzy";
+import $ from "jquery";
+import "select2";
 
-const namespace = 'react-select2-wrapper';
+const namespace = "react-select2-wrapper";
 
 export default class Select2 extends Component {
   static propTypes = {
     defaultValue: PropTypes.oneOfType([
       PropTypes.number,
       PropTypes.array,
-      PropTypes.string,
+      PropTypes.string
     ]),
     value: PropTypes.oneOfType([
       PropTypes.number,
       PropTypes.array,
-      PropTypes.string,
+      PropTypes.string
     ]),
     data: PropTypes.array,
     events: PropTypes.array,
@@ -27,20 +27,20 @@ export default class Select2 extends Component {
     onClose: PropTypes.func,
     onSelect: PropTypes.func,
     onChange: PropTypes.func,
-    onUnselect: PropTypes.func,
+    onUnselect: PropTypes.func
   };
 
   static defaultProps = {
     data: [],
     events: [
-      [`change.${namespace}`, 'onChange'],
-      [`select2:open.${namespace}`, 'onOpen'],
-      [`select2:close.${namespace}`, 'onClose'],
-      [`select2:select.${namespace}`, 'onSelect'],
-      [`select2:unselect.${namespace}`, 'onUnselect'],
+      [`change.${namespace}`, "onChange"],
+      [`select2:open.${namespace}`, "onOpen"],
+      [`select2:close.${namespace}`, "onClose"],
+      [`select2:select.${namespace}`, "onSelect"],
+      [`select2:unselect.${namespace}`, "onUnselect"]
     ],
     options: {},
-    multiple: false,
+    multiple: false
   };
 
   constructor(props) {
@@ -71,7 +71,7 @@ export default class Select2 extends Component {
   initSelect2(props) {
     const { options } = props;
 
-    this.el = $(ReactDOM.findDOMNode(this));
+    this.el = $(this.refs.el);
     // fix for updating selected value when data is changing
     if (this.forceUpdateValue) {
       this.updateSelect2Value(null);
@@ -103,7 +103,10 @@ export default class Select2 extends Component {
   }
 
   updateSelect2Value(value) {
-    this.el.off(`change.${namespace}`).val(value).trigger('change');
+    this.el
+      .off(`change.${namespace}`)
+      .val(value)
+      .trigger("change");
 
     const onChange = this.props.onChange;
     if (onChange) {
@@ -116,18 +119,23 @@ export default class Select2 extends Component {
     const newValue = this.prepareValue(value, defaultValue);
     const currentValue = multiple ? this.el.val() || [] : this.el.val();
 
-    if (!this.fuzzyValuesEqual(currentValue, newValue) || this.forceUpdateValue) {
+    if (
+      !this.fuzzyValuesEqual(currentValue, newValue) ||
+      this.forceUpdateValue
+    ) {
       this.updateSelect2Value(newValue);
       if (!this.initialRender) {
-        this.el.trigger('change');
+        this.el.trigger("change");
       }
       this.forceUpdateValue = false;
     }
   }
 
   fuzzyValuesEqual(currentValue, newValue) {
-    return (currentValue === null && newValue === '') ||
-      shallowEqualFuzzy(currentValue, newValue);
+    return (
+      (currentValue === null && newValue === "") ||
+      shallowEqualFuzzy(currentValue, newValue)
+    );
   }
 
   destroySelect2(withCallbacks = true) {
@@ -135,13 +143,13 @@ export default class Select2 extends Component {
       this.detachEventHandlers();
     }
 
-    this.el.select2('destroy');
+    this.el.select2("destroy");
     this.el = null;
   }
 
   attachEventHandlers(props) {
     props.events.forEach(event => {
-      if (typeof props[event[1]] !== 'undefined') {
+      if (typeof props[event[1]] !== "undefined") {
         this.el.on(event[0], props[event[1]]);
       }
     });
@@ -149,15 +157,15 @@ export default class Select2 extends Component {
 
   detachEventHandlers() {
     this.props.events.forEach(event => {
-      if (typeof this.props[event[1]] !== 'undefined') {
+      if (typeof this.props[event[1]] !== "undefined") {
         this.el.off(event[0]);
       }
     });
   }
 
   prepareValue(value, defaultValue) {
-    const issetValue = typeof value !== 'undefined' && value !== null;
-    const issetDefaultValue = typeof defaultValue !== 'undefined';
+    const issetValue = typeof value !== "undefined" && value !== null;
+    const issetDefaultValue = typeof defaultValue !== "undefined";
 
     if (!issetValue && issetDefaultValue) {
       return defaultValue;
@@ -167,7 +175,7 @@ export default class Select2 extends Component {
 
   prepareOptions(options) {
     const opt = options;
-    if (typeof opt.dropdownParent === 'string') {
+    if (typeof opt.dropdownParent === "string") {
       opt.dropdownParent = $(opt.dropdownParent);
     }
     return opt;
@@ -175,16 +183,24 @@ export default class Select2 extends Component {
 
   isObject(value) {
     const type = typeof value;
-    return type === 'function' || (value && type === 'object') || false;
+    return type === "function" || (value && type === "object") || false;
   }
 
   makeOption(item) {
     if (this.isObject(item)) {
       const { id, text, ...itemParams } = item;
-      return (<option key={`option-${id}`} value={id} {...itemParams}>{text}</option>);
+      return (
+        <option key={`option-${id}`} value={id} {...itemParams}>
+          {text}
+        </option>
+      );
     }
 
-    return (<option key={`option-${item}`} value={item}>{item}</option>);
+    return (
+      <option key={`option-${item}`} value={item}>
+        {item}
+      </option>
+    );
   }
 
   render() {
@@ -199,13 +215,13 @@ export default class Select2 extends Component {
     delete props.onUnselect;
 
     return (
-      <select {...props}>
+      <select ref="el" {...props}>
         {data.map((item, k) => {
           if (this.isObject(item) && this.isObject(item.children)) {
             const { children, text, ...itemParams } = item;
             return (
               <optgroup key={`optgroup-${k}`} label={text} {...itemParams}>
-                {children.map((child) => this.makeOption(child))}
+                {children.map(child => this.makeOption(child))}
               </optgroup>
             );
           }
